@@ -48,6 +48,19 @@ func main() {
 	)
 	`
 
+	binPath, err := GetCachePath()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("Binaries path:", binPath)
+
+	err = CheckCachePath(binPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	packages, err := ListPackages(src, mod)
 	fmt.Println(packages, err)
 }
