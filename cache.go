@@ -89,7 +89,7 @@ func (c *CleanCacheCommand) ParseFlags(args []string) {
 		30*24*time.Hour,
 		"delete files older than this duration",
 	)
-	fset.Parse(args)
+	_ = fset.Parse(args)
 }
 
 func (c *CleanCacheCommand) Run(ctx context.Context, args []string) error {

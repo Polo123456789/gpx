@@ -28,7 +28,9 @@ func InstallPackage(ctx context.Context, p Package, binPath string) error {
 
 	fmt.Println(DoneCheckbox)
 
-	AddVersionToExecutable(p, binPath)
+	if err := AddVersionToExecutable(p, binPath); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -46,10 +48,7 @@ func AddVersionToExecutable(p Package, binPath string) error {
 func PackageIsInstalled(p Package, binPath string) bool {
 	path := path.Join(binPath, p.BinName())
 	_, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 // We can use the modification time to know when was the last time that we used
@@ -101,7 +100,7 @@ func (c *InstallAllCommand) Synopsis() string {
 func (c *InstallAllCommand) ParseFlags(args []string) {
 	fset := flag.NewFlagSet(c.Name(), flag.ExitOnError)
 	fset.BoolVar(&c.forced, "f", false, "force installation")
-	fset.Parse(args)
+	_ = fset.Parse(args)
 }
 
 func (c *InstallAllCommand) Run(ctx context.Context, args []string) error {
