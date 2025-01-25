@@ -65,6 +65,18 @@ func main() {
 	}
 
 	commands := []Command{}
+
+	commands = append(
+		commands,
+		&InstallAllCommand{
+			binPath:  binPath,
+			packages: packages,
+		},
+		&CleanCacheCommand{
+			binPath: binPath,
+		},
+	)
+
 	for _, p := range packages {
 		commands = append(commands, &ExecCommand{
 			pkg:     p,

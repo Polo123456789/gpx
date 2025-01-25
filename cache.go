@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 const CacheSubdirectory = "gpx"
@@ -54,4 +57,67 @@ func CacheExists(p string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func GetFileAge(p string) (time.Duration, error) {
+	info, err := os.Stat(p)
+	if err != nil {
+		return 0, err
+	}
+
+	return time.Since(info.ModTime()), nil
+}
+
+type CleanCacheCommand struct {
+	binPath   string
+	olderThan time.Duration
+}
+
+func (c *CleanCacheCommand) Name() string {
+	return "i:clean"
+}
+
+func (c *CleanCacheCommand) Synopsis() string {
+	return "clean old binaries from cache"
+}
+
+func (c *CleanCacheCommand) ParseFlags(args []string) {
+	fset := flag.NewFlagSet(c.Name(), flag.ExitOnError)
+	fset.DurationVar(
+		&c.olderThan,
+		"older-than",
+		30*24*time.Hour,
+		"delete files older than this duration",
+	)
+	fset.Parse(args)
+}
+
+func (c *CleanCacheCommand) Run(ctx context.Context, args []string) error {
+	c.ParseFlags(args)
+
+	files, err := os.ReadDir(c.binPath)
+	if err != nil {
+		return fmt.Errorf("could not read cache dir %s: %v", c.binPath, err)
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+
+		age, err := GetFileAge(filepath.Join(c.binPath, f.Name()))
+		if err != nil {
+			return fmt.Errorf("could not get age of %s: %v", f.Name(), err)
+		}
+
+		if age > c.olderThan {
+			fmt.Println("removing", f.Name())
+			err = os.Remove(filepath.Join(c.binPath, f.Name()))
+			if err != nil {
+				return fmt.Errorf("could not remove %s: %v", f.Name(), err)
+			}
+		}
+	}
+
+	return nil
 }

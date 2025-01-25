@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -57,7 +58,12 @@ func TouchExecutable(p Package, binPath string) error {
 	return nil
 }
 
-func ExecPackage(ctx context.Context, p Package, binPath string, args ...string) error {
+func ExecPackage(
+	ctx context.Context,
+	p Package,
+	binPath string,
+	args ...string,
+) error {
 	cmd := exec.CommandContext(ctx, path.Join(binPath, p.BinName()), args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -67,4 +73,42 @@ func ExecPackage(ctx context.Context, p Package, binPath string, args ...string)
 	}
 
 	return TouchExecutable(p, binPath)
+}
+
+type InstallAllCommand struct {
+	forced   bool
+	packages []Package
+	binPath  string
+}
+
+var _ Command = &InstallAllCommand{}
+
+func (c *InstallAllCommand) Name() string {
+	return "i:install"
+}
+
+func (c *InstallAllCommand) Synopsis() string {
+	return "install all packages"
+}
+
+func (c *InstallAllCommand) ParseFlags(args []string) {
+	fset := flag.NewFlagSet(c.Name(), flag.ExitOnError)
+	fset.BoolVar(&c.forced, "f", false, "force installation")
+	fset.Parse(args)
+}
+
+func (c *InstallAllCommand) Run(ctx context.Context, args []string) error {
+	c.ParseFlags(args)
+
+	for _, p := range c.packages {
+		if !c.forced && PackageIsInstalled(p, c.binPath) {
+			fmt.Printf("%s is already installed\n", p.String())
+			continue
+		}
+
+		if err := InstallPackage(ctx, p, c.binPath); err != nil {
+			return err
+		}
+	}
+	return nil
 }

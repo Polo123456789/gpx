@@ -7,6 +7,8 @@ type ExecCommand struct {
 	binPath string
 }
 
+var _ Command = &ExecCommand{}
+
 func (c *ExecCommand) Run(ctx context.Context, args []string) error {
 	if !PackageIsInstalled(c.pkg, c.binPath) {
 		if err := InstallPackage(ctx, c.pkg, c.binPath); err != nil {
@@ -22,5 +24,5 @@ func (c *ExecCommand) Name() string {
 }
 
 func (c *ExecCommand) Synopsis() string {
-	return "Execute " + c.pkg.CommandName()
+	return "Execute " + c.pkg.BinName()
 }
