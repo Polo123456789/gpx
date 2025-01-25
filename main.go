@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 )
 
 func main() {
+	ctx := context.Background()
+	_ = ctx
+
 	const src = `
 	//go:build tools
 	// +build tools
@@ -62,5 +66,20 @@ func main() {
 	}
 
 	packages, err := ListPackages(src, mod)
-	fmt.Println(packages, err)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(packages)
+
+	for _, p := range packages {
+		if err := InstallPackage(ctx, p, binPath); err != nil {
+			fmt.Println(err)
+			return
+		}
+		if err := AddVersionToExecutable(p, binPath); err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 }
