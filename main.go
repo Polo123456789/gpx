@@ -84,7 +84,7 @@ func main() {
 		})
 	}
 
-	if err := RunCommand(ctx, os.Args, commands); err != nil {
+	if err := RunCommand(ctx, commands, os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 }

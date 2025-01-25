@@ -11,7 +11,7 @@ type Command interface {
 	Synopsis() string
 }
 
-func RunCommand(ctx context.Context, args []string, commands []Command) error {
+func RunCommand(ctx context.Context, commands []Command, args []string) error {
 	if len(args) < 2 {
 		return errors.New(GenerateHelp(commands))
 	}
@@ -32,10 +32,18 @@ func RunCommand(ctx context.Context, args []string, commands []Command) error {
 }
 
 func GenerateHelp(commands []Command) string {
-	help := "Available commands:\n"
+
+	help := `Golang Package eXecute
+
+Run commands from your tools.go always using the same version that you have in
+your go.mod file.
+
+Available commands:
+
+`
 	for _, c := range commands {
 		help += "\t" + c.Name() + " - " + c.Synopsis() + "\n"
 	}
-	help += ""
+
 	return help
 }

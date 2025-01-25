@@ -111,11 +111,12 @@ func (c *CleanCacheCommand) Run(ctx context.Context, args []string) error {
 		}
 
 		if age > c.olderThan {
-			fmt.Println("removing", f.Name())
+			fmt.Print("Removing ", f.Name(), " ... ")
 			err = os.Remove(filepath.Join(c.binPath, f.Name()))
 			if err != nil {
 				return fmt.Errorf("could not remove %s: %v", f.Name(), err)
 			}
+			fmt.Println(DoneCheckbox)
 		}
 	}
 

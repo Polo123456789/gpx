@@ -10,17 +10,23 @@ import (
 	"time"
 )
 
+var (
+	DoneCheckbox = "\x1B[32m✓\x1B[0m"
+)
+
 func InstallPackage(ctx context.Context, p Package, binPath string) error {
 	cmd := exec.CommandContext(ctx, "go", "install", p.String())
 	cmd.Env = append(os.Environ(), "GOBIN="+binPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	fmt.Println("Installing package, command:", cmd.String())
+	fmt.Print("Installing ", p.String(), "... ")
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to install %s: %w", p.String(), err)
 	}
+
+	fmt.Println(DoneCheckbox)
 
 	AddVersionToExecutable(p, binPath)
 
@@ -67,6 +73,7 @@ func ExecPackage(
 	cmd := exec.CommandContext(ctx, path.Join(binPath, p.BinName()), args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to run %s: %w", p.String(), err)
