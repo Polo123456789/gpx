@@ -28,7 +28,7 @@ func RunCommand(ctx context.Context, commands []Command, args []string) error {
 		}
 	}
 
-	return errors.New(GenerateHelp(commands))
+	return errors.New("Command not found\n\n" + GenerateHelp(commands))
 }
 
 func GenerateHelp(commands []Command) string {
