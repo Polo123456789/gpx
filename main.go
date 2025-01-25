@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 )
 
 func main() {
 	ctx := context.Background()
-	_ = ctx
 
-	const src = `
+	const toolsSrc = `
 	//go:build tools
 	// +build tools
 
@@ -22,7 +22,7 @@ func main() {
 	)
 	`
 
-	const mod = `
+	const modSrc = `
 	module some-project-of-mine.com/you-dont-care
 	
 	go 1.23.2
@@ -52,34 +52,40 @@ func main() {
 	)
 	`
 
-	binPath, err := GetCachePath()
+	binPath, err := GetBinariesPath()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, "Error getting cache path:", err)
 		return
 	}
-	fmt.Println("Binaries path:", binPath)
+
+	packages, err := ListPackages(toolsSrc, modSrc)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error listing packages:", err)
+		return
+	}
+
+	commands := []Command{}
+	for _, p := range packages {
+		commands = append(commands, &ExecCommand{
+			pkg:     p,
+			binPath: binPath,
+		})
+	}
+
+	if err := RunCommand(ctx, os.Args, commands); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+}
+
+func GetBinariesPath() (string, error) {
+	binPath, err := GetCachePath()
+	if err != nil {
+		return "", err
+	}
 
 	err = CheckCachePath(binPath)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", err
 	}
-
-	packages, err := ListPackages(src, mod)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(packages)
-
-	for _, p := range packages {
-		if err := InstallPackage(ctx, p, binPath); err != nil {
-			fmt.Println(err)
-			return
-		}
-		if err := AddVersionToExecutable(p, binPath); err != nil {
-			fmt.Println(err)
-			return
-		}
-	}
+	return binPath, nil
 }
