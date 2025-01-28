@@ -11,16 +11,16 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	toolsSrc, err := os.ReadFile("tools.go")
+	toolsSrc, err := os.ReadFile("tools/tools.go")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading tools.go:", err)
+		fmt.Fprintln(os.Stderr, "Error reading tools/tools.go:", err)
 		fmt.Println("Remember to run this command in the root of your project")
 		return
 	}
 
-	modSrc, err := os.ReadFile("go.mod")
+	modSrc, err := os.ReadFile("tools/go.mod")
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading go.mod:", err)
+		fmt.Fprintln(os.Stderr, "Error reading tools/go.mod:", err)
 		fmt.Println("Remember to run this command in the root of your project")
 		return
 	}

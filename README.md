@@ -28,7 +28,7 @@ gpx <tool> [args...]
 
 ## Setting Up Your Tools
 
-To set up your tools, create a `tools.go` file in your project directory.
+To set up your tools, create a `tools/tools.go` file in your project directory.
 Here’s an example of how to structure it:
 
 ```go
@@ -43,8 +43,14 @@ import (
 )
 ```
 
+And add a `go.mod` file in the `tools` directory:
+
+```go
+go mod init github.com/your/project/tools
+```
+
 Make sure to run `go mod tidy` after adding tools to ensure they are included
-in your `go.mod` file.
+in your `tools/go.mod` file.
 
 ## Contributing
 
